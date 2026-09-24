@@ -52,7 +52,8 @@ or [On VM](/admin/deployment/aws/on-vm/overview) deployment guides.
 The packaging assets (`Dockerfile`, `build-image.sh`, Compose file, nginx and entrypoint scripts)
 live under `standalone/` in the `codemie` backend repository. The image bundles the frontend from
 the `codemie-ui` repository at build time — no separate frontend repository checkout is required
-to run the image, only to build it.
+to run the image, only to build it. Consumers of a published release use its version-matched
+standalone deployment files and image tag; they do not need either source checkout.
 
 ## Next Steps
 

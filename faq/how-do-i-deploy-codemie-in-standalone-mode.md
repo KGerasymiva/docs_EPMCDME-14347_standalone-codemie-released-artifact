@@ -7,12 +7,15 @@ Kubernetes or On VM deployment guides.
 
 The general flow:
 
-1. Build the image with `standalone/build-image.sh --image-tag localhost/codemie:local` from a
-   local checkout of the `codemie` backend repository (with `codemie-ui` as a sibling directory,
-   or via explicit `--backend-root`/`--frontend-root` paths).
-2. Copy `standalone/.env.standalone.example` to `standalone/.env.standalone` and fill in an LLM
+1. Obtain the published image tag and version-matched standalone deployment files from the same
+   CodeMie release.
+2. Set `CODEMIE_IMAGE` to that exact published image tag.
+3. Copy `standalone/.env.standalone.example` to `standalone/.env.standalone` and fill in an LLM
    provider (Azure OpenAI or AWS Bedrock).
-3. Start the stack with `docker compose -f standalone/docker-compose.standalone.yml up -d`.
+4. Start the stack with `docker compose -f standalone/docker-compose.standalone.yml up -d`.
+
+Contributors can alternatively build the image from local `codemie` and `codemie-ui` checkouts
+using `standalone/build-image.sh`; see the step-by-step deployment guide for both workflows.
 
 CodeMie Standalone authenticates with the platform's built-in local provider by default — there
 is no Keycloak container in the stack. By default it also runs without Elasticsearch

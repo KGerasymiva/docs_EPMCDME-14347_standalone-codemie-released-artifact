@@ -9,10 +9,37 @@ pagination_next: null
 
 # CodeMie Standalone Deployment Guide
 
-This guide covers building the standalone image, configuring the environment, and starting the
-CodeMie Standalone stack with Docker Compose.
+This guide covers running a published standalone image, configuring the environment, and starting
+the CodeMie Standalone stack with Docker Compose. It also explains how contributors can build the
+same image directly from the `codemie` and `codemie-ui` source repositories.
 
-## Prerequisites
+## Runtime Prerequisites
+
+- **Docker Compose** or **Podman Compose**
+- The version-matched standalone deployment files supplied with the release, or the same files
+  from the corresponding `codemie` repository tag. Keep their relative directory layout intact:
+  the Compose file mounts the ClickHouse schema and OpenTelemetry Collector configuration from
+  `config/` when the optional Analytics profile is used.
+
+## Using a Published Image
+
+Use the image tag and standalone deployment files from the same CodeMie release. Do not combine a
+Compose file or configuration files from one release with an image from another release.
+
+Set `CODEMIE_IMAGE` to the exact published image tag supplied with the release:
+
+```bash
+export CODEMIE_IMAGE=<image-tag-from-the-release>
+```
+
+`CODEMIE_IMAGE` is evaluated by Compose and is separate from the container variables stored in
+`standalone/.env.standalone`. Continue with [Configuring the Environment](#configuring-the-environment)
+and [Starting the Stack](#starting-the-stack); no backend or frontend source checkout is required
+to run a published image.
+
+## Building from Source
+
+Building the image locally additionally requires:
 
 - **Docker** with BuildKit enabled (required for named build-context support), or **Podman**
 - **Bash**
@@ -32,8 +59,6 @@ parent/
 
 Explicit `--backend-root`/`--frontend-root` arguments can point anywhere if the sibling layout is
 not used.
-
-## Building the Image
 
 The standalone image bundles the frontend, backend, and nginx into a single image. `--image-tag`
 is the only required argument.
@@ -128,9 +153,10 @@ looks for `customer-config.yaml` inside that directory:
 - If it does not exist, startup continues with the config bundled in the image.
 
 There is no minimal example file — always start from the canonical, version-matched
-`config/customer/customer-config.yaml` in the `codemie` repository. It declares every feature ID,
-component, and default value for the exact build in use; mounting anything less than the full
-file disables every component it omits.
+`config/customer/customer-config.yaml` supplied with the deployment files or obtained from the
+matching `codemie` repository tag. It declares every feature ID, component, and default value for
+the exact image in use; mounting anything less than the full file disables every component it
+omits.
 
 To use an external configuration:
 
@@ -187,19 +213,10 @@ docker compose -f standalone/docker-compose.standalone.yml up -d
 podman compose -f standalone/docker-compose.standalone.yml up -d
 ```
 
-The Compose file only references an image tag — it never builds it. By default it uses
-`localhost/codemie:local`, the tag produced by `build-image.sh`. Rebuild with that script to
-refresh it, then re-run `up`.
-
-**Running a published image instead of a local build** — set `CODEMIE_IMAGE` to the exact image
-tag before running Compose:
-
-```bash
-export CODEMIE_IMAGE=<registry>/<published-codemie-image>:<released-tag>
-docker compose -f standalone/docker-compose.standalone.yml up -d
-```
-
-Leave `CODEMIE_IMAGE` unset for the local `build-image.sh` workflow.
+The Compose file only references an image tag — it never builds it. For a published release,
+`CODEMIE_IMAGE` must contain the exact image tag supplied with that release. For a local
+build-from-source workflow, leave it unset to use `localhost/codemie:local`, the default tag used
+in the examples above.
 
 Once the `codemie` container reports healthy, open CodeMie at `http://localhost:8080`.
 
@@ -281,8 +298,9 @@ To enable CLI Analytics:
    `otelcollector` running, since Compose only tears down services from profiles it was told
    about.
 
-The Analytics menu item is visible to a global or project admin once `features:cliAnalytics` is
-enabled.
+The Analytics navigation item is available to every authenticated user. The CLI Analytics tab is
+displayed only to system administrators and project administrators when `features:cliAnalytics`
+is enabled. Other Analytics tabs retain their existing role and feature-flag visibility rules.
 
 ## Generated Files
 
